@@ -1,0 +1,26 @@
+# Build
+FROM openjdk:11-jdk as builder
+
+ENV APP_HOME=/app/
+WORKDIR $APP_HOME
+
+COPY gradlew $APP_HOME
+COPY gradle $APP_HOME/gradle
+
+COPY build.gradle settings.gradle $APP_HOME
+RUN ./gradlew build -x test --parallel --no-daemon --continue > /dev/null 2>&1 || return 0
+
+COPY src src
+RUN ./gradlew build -x test --parallel --no-daemon
+
+# Run
+FROM openjdk:11-jre
+
+ENV ARTIFACT_NAME=demo-0.0.1-SNAPSHOT.jar
+ENV APP_HOME=/app/
+WORKDIR $APP_HOME
+
+COPY --from=builder $APP_HOME/build/libs/$ARTIFACT_NAME .
+
+EXPOSE 8080
+CMD ["sh", "-c", "java -jar ${ARTIFACT_NAME}"]
