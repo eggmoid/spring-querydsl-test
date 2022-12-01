@@ -1,24 +1,22 @@
 pipeline {
   agent any
+  environment {
+    DOCKER_REGISTRY = "https://registry.hub.docker.com"
+    DOCKER_CREDENTIALS_ID = "dockerhub-credential"
+    DOCKER_IMAGE_NAME = "limejuny/springboot-querydsl-test"
+  }
   stages {
-    stage('Checkout') {
+    stage("Build Docker Image") {
       steps {
         script {
-          checkout scm
+          app = docker.build("${DOCKER_IMAGE_NAME}")
         }
       }
     }
-    stage('Build') {
+    stage("Push Docker Image") {
       steps {
         script {
-          app = docker.build('limejuny/springboot-querydsl-test')
-        }
-      }
-    }
-    stage('Push') {
-      steps {
-        script {
-          docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credential') {
+          docker.withRegistry("${DOCKER_REGISTRY}", "${DOCKER_CREDENTIALS_ID}") {
             app.push("latest")
           }
         }
