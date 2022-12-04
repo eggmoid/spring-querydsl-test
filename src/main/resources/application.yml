@@ -21,6 +21,7 @@ springdoc:
 server:
   servlet:
     context-path: /api/v1
+  shutdown: graceful
 logging:
   level:
     org:
